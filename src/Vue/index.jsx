@@ -73,6 +73,7 @@ export default function SignIn() {
             </div>
           </div>
         </div>
+        <Link to={"/payment"}>payment test </Link>
       </section>
     </div>
   );
