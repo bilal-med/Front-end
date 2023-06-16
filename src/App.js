@@ -7,6 +7,8 @@ import { Routes } from "react-router-dom/dist/umd/react-router-dom.development";
 import SignUp from "./Vue/SignUp";
 import Map from "./Vue/Maps";
 
+import StripeContainer from "./Vue/StripeContainer";
+
 function App() {
   return (
     <Router>
@@ -16,6 +18,7 @@ function App() {
         <Route path="/" element={<SignIn />} />
         <Route path="/forgotPassword" element={<ForgetPasswoord />} />
         <Route path="/maps" element={<Map />} />
+        <Route path="payment" element={<StripeContainer />} />
       </Routes>
     </Router>
   );
