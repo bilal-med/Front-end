@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { Form, Formik, Field, ErrorMessage } from "formik";
+import { Form, Formik } from "formik";
 import * as Yup from "yup";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
-import axios from "axios";
 import Swal from "sweetalert2";
 
 const CARD_OPTIONS = {
