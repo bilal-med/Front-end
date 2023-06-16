@@ -26,8 +26,8 @@ const CARD_OPTIONS = {
 
 const PaymentForm = () => {
   const [success, setSuccess] = useState(false);
-  const stripe = useStripe();
-  const elements = useElements();
+  //   const stripe = useStripe();
+  //   const elements = useElements();
 
   const paymentValidationSchema = Yup.object().shape({
     cardNumber: Yup.string().required("Card number is required"),
