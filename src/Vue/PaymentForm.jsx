@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 import { CardElement } from "@stripe/react-stripe-js";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const CARD_OPTIONS = {
   iconStyle: "solid",
@@ -25,38 +26,22 @@ const CARD_OPTIONS = {
 };
 
 const PaymentForm = () => {
-  const [success, setSuccess] = useState(false);
-  //   const stripe = useStripe();
-  //   const elements = useElements();
-
+  const redirect = useNavigate();
   const paymentValidationSchema = Yup.object().shape({
     cardNumber: Yup.string().required("Card number is required"),
     expirationDate: Yup.string().required("Expiration date is required"),
     cvc: Yup.string().required("CVC is required"),
   });
 
-  // const handleSubmit = async (values) => {
   const handleSubmit = (values) => {
-    const { cardNumber, expirationDate, cvc } = values;
-    // const { error, paymentMethod } = await stripe.createPaymentMethod({
-    //   type: "card",
-    //   card: elements.getElement(CardElement),
-    // });
-
-    console.log("cart", cardNumber);
-    console.log("exp", expirationDate);
-    console.log("cvc", cvc);
-
     Swal.fire({
       title: "Payment Successful!",
       text: "You have successfully paid for your order!",
       icon: "success",
-      confirmButtonText: "OK",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setSuccess(true);
-      }
+      timer: 2000,
+      showConfirmButton: false,
     });
+    redirect("/maps");
   };
 
   return (
@@ -68,49 +53,44 @@ const PaymentForm = () => {
               <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 text-center">
                 Payment Details
               </h1>
-              {!success ? (
-                <Formik
-                  initialValues={{
-                    cardNumber: "",
-                    expirationDate: "",
-                    cvc: "",
-                  }}
+
+              <Formik
+                initialValues={{
+                  cardNumber: "",
+                  expirationDate: "",
+                  cvc: "",
+                }}
+                validationSchema={paymentValidationSchema}
+                onSubmit={handleSubmit}
+              >
+                <Form
+                  className="space-y-4 md:space-y-6"
                   onSubmit={handleSubmit}
-                  validationSchema={paymentValidationSchema}
                 >
-                  <Form className="space-y-4 md:space-y-6">
-                    <div>
-                      <label htmlFor="cardNumber">Card Number</label>
-                      <CardElement
-                        options={{
-                          ...CARD_OPTIONS,
-                          style: {
-                            ...CARD_OPTIONS.style,
-                            base: {
-                              ...CARD_OPTIONS.style.base,
-                              color: "#000",
-                              "::placeholder": { color: "#999" },
-                            },
+                  <div>
+                    <label htmlFor="cardNumber">Card Number</label>
+                    <CardElement
+                      options={{
+                        ...CARD_OPTIONS,
+                        style: {
+                          ...CARD_OPTIONS.style,
+                          base: {
+                            ...CARD_OPTIONS.style.base,
+                            color: "#000",
+                            "::placeholder": { color: "#999" },
                           },
-                        }}
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      className="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
-                    >
-                      Pay
-                    </button>
-                  </Form>
-                </Formik>
-              ) : (
-                <div>
-                  <h2 className="text-center">
-                    You just bought a sweet spatula. Congratulations, this is
-                    the best decision of your life!
-                  </h2>
-                </div>
-              )}
+                        },
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
+                  >
+                    Pay
+                  </button>
+                </Form>
+              </Formik>
             </div>
           </div>
         </div>
