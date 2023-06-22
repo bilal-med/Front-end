@@ -11,7 +11,7 @@ const validationSchema = Yup.object().shape({
   password: Yup.string().required("Password is required"),
 });
 
-const Payment = () => {
+const Payment = (data) => {
   const initialValues = {
     email: "",
     password: "",

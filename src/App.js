@@ -8,6 +8,7 @@ import SignUp from "./Vue/SignUp";
 
 import StripeContainer from "./Vue/StripeContainer";
 import Maps from "./Vue/Maps";
+import MapsPay from "./Vue/MapContainer";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/forgotPassword" element={<ForgetPasswoord />} />
         <Route path="/maps" element={<Maps />} />
         <Route path="/payment" element={<StripeContainer />} />
+        <Route path="/mapspay" element={<MapsPay />} />
       </Routes>
     </Router>
   );

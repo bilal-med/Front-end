@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ErrorMessage, Form, Formik } from "formik";
 import * as Yup from "yup";
 import {
@@ -7,6 +7,7 @@ import {
 } from "@stripe/react-stripe-js";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const CARD_OPTIONS = {
   iconStyle: "solid",
@@ -30,8 +31,17 @@ const CARD_OPTIONS = {
 
 const PaymentForm = () => {
   const redirect = useNavigate();
-  // const stripe = useStripe();
-  // const elements = useElements();
+  const location = useLocation();
+  const [parkingName, setParkingName] = useState("");
+  const [parkingCapacity, setParkingCapacity] = useState("");
+  const [parkingPrice, setParkingPrice] = useState("");
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    setParkingName(queryParams.get("parkingName") || "");
+    setParkingCapacity(queryParams.get("parkingCapacity") || "");
+    setParkingPrice(queryParams.get("parkingPrice") || "");
+  }, [location.search]);
 
   const [touched, setTouched] = useState({
     cardNumber: false,
@@ -49,13 +59,39 @@ const PaymentForm = () => {
     // Perform Stripe payment processing here using the `stripe` and `elements` objects
 
     Swal.fire({
-      title: "Payment Successful!",
-      text: "You have successfully paid for your order!",
-      icon: "success",
-      timer: 2000,
-      showConfirmButton: false,
+      title: "Enter your email",
+      input: "email",
+      inputLabel: "Email",
+      inputPlaceholder: "Enter your email address",
+      showCancelButton: true,
+      confirmButtonText: "envoyer QR code",
+      cancelButtonText: "Cancel",
+      preConfirm: (email) => {
+        // Do something with the retrieved email
+        console.log("Entered email:", email);
+        // Perform any necessary actions with the email (e.g., send it to the server)
+        Swal.fire({
+          title: "Payment Successful!",
+          text: `You have successfully paid for your order at ${parkingName}. Capacity: ${parkingCapacity}, Price: ${parkingPrice}`,
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      },
     });
-    redirect("/maps");
+
+    // Get the query parameters from the current URL
+    const queryParams = new URLSearchParams(window.location.search);
+    const parkingName = queryParams.get("parkingName");
+    const parkingCapacity = queryParams.get("parkingCapacity");
+    const parkingPrice = queryParams.get("parkingPrice");
+    const parkingLat = queryParams.get("parkingLat");
+    const parkingLng = queryParams.get("parkingLng");
+
+    // Redirect to "/mapspay" with the retrieved query parameters
+    redirect(
+      `/mapspay?parkingName=${parkingName}&parkingCapacity=${parkingCapacity}&parkingPrice=${parkingPrice}&parkingLat=${parkingLat}&parkingLng=${parkingLng}`
+    );
   };
 
   const handleCardElementChange = (event) => {
@@ -81,7 +117,6 @@ const PaymentForm = () => {
                   expirationDate: "",
                   cvc: "",
                 }}
-                validationSchema={paymentValidationSchema}
                 onSubmit={handleSubmit}
               >
                 {({ errors, touched }) => (
@@ -103,11 +138,13 @@ const PaymentForm = () => {
                         }}
                         onChange={handleCardElementChange}
                       />
-                      <ErrorMessage
-                        name="cardNumber"
-                        component="div"
-                        className="text-red-500"
-                      />
+                      {touched.cardNumber && errors.cardNumber && (
+                        <ErrorMessage
+                          name="cardNumber"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      )}
                     </div>
                     {/* Add other form fields and error messages here */}
                     <button

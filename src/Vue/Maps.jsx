@@ -7,6 +7,13 @@ import {
   DirectionsRenderer,
 } from "@react-google-maps/api";
 import Swal from "sweetalert2";
+import {
+  useNavigate,
+  useNavigation,
+} from "react-router-dom/dist/umd/react-router-dom.development";
+import Payment from "./payment";
+import Modal from "./PaymentModal";
+import PaymentForm from "./PaymentForm";
 
 const containerStyle = {
   width: "100%",
@@ -51,6 +58,12 @@ const virtualMeknesParkingList = [
     capacity: 100,
     price: 10,
   },
+  {
+    name: "Parking 7",
+    position: { lat: 33.89, lng: -5.556 },
+    capacity: 150,
+    price: 10,
+  },
 
   // Add more parking locations in Meknes...
 ];
@@ -84,6 +97,11 @@ function Maps() {
   const [directions, setDirections] = useState(null);
   const [parkingList, setParkingList] = useState([]);
 
+  const [park, setPark] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const navigation = useNavigate();
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -100,6 +118,25 @@ function Maps() {
     }
   }, []);
 
+  // const handleApiLoaded = (map) => {
+  //   map.addListener("click", (event) => {
+  //     setDestination({
+  //       name: "Destination",
+  //       position: event.latLng.toJSON(),
+  //     });
+  //   });
+
+  //   setParkingList([
+  //     ...virtualMeknesParkingList,
+  //     ...virtualCasablancaParkingList,
+  //   ]);
+  // };
+  useEffect(() => {
+    if (typeof window.google === "object") {
+      setParkingList(combinedParkingList);
+    }
+  }, []);
+
   const handleApiLoaded = (map) => {
     map.addListener("click", (event) => {
       setDestination({
@@ -107,6 +144,24 @@ function Maps() {
         position: event.latLng.toJSON(),
       });
     });
+
+    if (parkingList.length > 0) {
+      parkingList.forEach((parking, index) => {
+        const marker = new window.google.maps.Marker({
+          position: parking.position,
+          label: parking.name,
+          icon: {
+            url: "https://maps.google.com/mapfiles/ms/icons/parkinglot.png",
+            scaledSize: new window.google.maps.Size(30, 30),
+          },
+          map: map,
+        });
+
+        marker.addListener("click", () => {
+          handleMarkerClick(parking);
+        });
+      });
+    }
   };
 
   const directionsOptions = {
@@ -137,68 +192,86 @@ function Maps() {
     Swal.fire({
       title: parking.name,
       html: `
-        <p>Capacity: ${parking.capacity}</p>
-        <p>Price: ${parking.price}</p>
+        <p>nombre de place : ${parking.capacity}</p>
+        <p>Prix: ${parking.price}  DHS</p>
       `,
+      // buttons redirect to the payment page
+      showCancelButton: true,
+      confirmButtonText: "Reserve",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setPark(parking);
+        const queryParams = new URLSearchParams();
+        queryParams.set("parkingName", parking.name);
+        queryParams.set("parkingCapacity", parking.capacity);
+        queryParams.set("parkingPrice", parking.price);
+        queryParams.set("parkingLat", parking.position.lat);
+        queryParams.set("parkingLng", parking.position.lng);
+        const queryString = queryParams.toString();
+        navigation(`/payment?${queryString}`);
+      }
     });
   };
 
   return (
-    <LoadScript
-      googleMapsApiKey="AIzaSyCHc5NI8qU_WJ7X0UqoOD33VzvKibsxVkU"
-      onLoad={() => {
-        setParkingList(combinedParkingList);
-      }}
-    >
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={currentLocation}
-        zoom={10}
-        onLoad={handleApiLoaded}
+    <>
+      <LoadScript
+        googleMapsApiKey="AIzaSyCHc5NI8qU_WJ7X0UqoOD33VzvKibsxVkU"
+        libraries={["places"]}
+        onLoad={() => {
+          setParkingList(combinedParkingList);
+        }}
       >
-        {currentLocation && (
-          <Marker
-            position={currentLocation}
-            icon={{
-              url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-              scaledSize: new window.google.maps.Size(48, 48),
-            }}
-          />
-        )}
-        {destination && (
-          <Marker position={destination.position} label={destination.name} />
-        )}
-        {destination && (
-          <DirectionsService
-            options={directionsOptions}
-            callback={directionsCallback}
-          />
-        )}
-        {directions && (
-          <DirectionsRenderer
-            options={{
-              directions: directions,
-              markerOptions: { visible: false },
-              polylineOptions: { strokeColor: "#800080" },
-            }}
-          />
-        )}
-        {parkingList.length > 0 &&
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={currentLocation}
+          zoom={10}
+          onLoad={handleApiLoaded}
+        >
+          {currentLocation && (
+            <Marker
+              position={currentLocation}
+              icon={{
+                url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                scaledSize: new window.google.maps.Size(48, 48),
+              }}
+            />
+          )}
+          {destination && (
+            <Marker position={destination.position} label={destination.name} />
+          )}
+          {destination && (
+            <DirectionsService
+              options={directionsOptions}
+              callback={directionsCallback}
+            />
+          )}
+          {directions && (
+            <DirectionsRenderer
+              options={{
+                directions: directions,
+                markerOptions: { visible: false },
+                polylineOptions: { strokeColor: "#800080" },
+              }}
+            />
+          )}
+          {/* {parkingList &&
           parkingList.map((parking, index) => (
             <Marker
               key={index}
               position={parking.position}
               label={parking.name}
               icon={{
-                // parking image
-                url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                url: "https://maps.google.com/mapfiles/ms/icons/parkinglot.png",
                 scaledSize: new window.google.maps.Size(48, 48),
               }}
               onClick={() => handleMarkerClick(parking)}
             />
-          ))}
-      </GoogleMap>
-    </LoadScript>
+          ))} */}
+        </GoogleMap>
+      </LoadScript>
+    </>
   );
 }
 
