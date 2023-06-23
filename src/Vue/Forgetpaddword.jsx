@@ -2,6 +2,7 @@ import * as React from "react";
 import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 import Input from "../ui/Input";
+import axios from 'axios';
 
 export default function ForgetPasswoord() {
   const authValidationShema = Yup.object().shape({
@@ -16,8 +17,21 @@ export default function ForgetPasswoord() {
       password: "",
     },
     onSubmit: (data) => {
-      console.log(data);
-      // logique
+      axios.post('http://localhost:8000/forgotPassword', data)
+      .then(response => {
+        // Traitement en cas de succès de la requête
+        if (response.status) {
+          alert("Demande de réinitialisation de mot de passe envoyée")
+          console.log('Demande de réinitialisation de mot de passe envoyée');
+        } else {
+          alert("Erreur lors de la demande de réinitialisation de mot de passe")
+          console.error('Erreur lors de la demande de réinitialisation de mot de passe');
+        }
+      })
+      .catch(error => {
+        // Traitement en cas d'erreur de la requête
+        console.error('Erreur lors de la requête', error);
+      });
     },
     validationSchema: authValidationShema,
   });
