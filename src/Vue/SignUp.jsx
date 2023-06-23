@@ -1,10 +1,14 @@
 import * as React from "react";
+import axios from 'axios';
+import { useNavigate } from "react-router-dom/dist/umd/react-router-dom.development";
+
 import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 import Input from "../ui/Input";
 import { Link } from "react-router-dom";
 
 export default function SignUp() {
+  const navigate = useNavigate();
   const authValidationShema = Yup.object().shape({
     email: Yup.string()
       .email("email n'est pa valide")
@@ -22,8 +26,20 @@ export default function SignUp() {
       password: "",
     },
     onSubmit: (data) => {
-      console.log(data);
-      // logique
+      axios.post('http://localhost:8000/register', data)
+           .then(response => {
+             // Traitement en cas de succès de la requête
+             if (response.status) {
+              alert("success")
+               navigate("/horaire");
+             } else {
+               console.error('Erreur lors de la connexion');
+             }
+           })
+           .catch(error => {
+             // Traitement en cas d'erreur de la requête
+             console.error('Erreur lors de la requête', error);
+           });
     },
     validationSchema: authValidationShema,
   });
