@@ -7,6 +7,8 @@ import {
   DirectionsRenderer,
 } from "@react-google-maps/api";
 import Swal from "sweetalert2";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+
 import {
   useNavigate,
   useNavigation,
@@ -71,27 +73,29 @@ const virtualMeknesParkingList = [
 const virtualCasablancaParkingList = [
   // Casablanca parking locations
   {
-    name: "Parking 1",
+    name: "Parking sbata",
     position: { lat: 33.573, lng: -7.596 },
-    capacity: 150,
-    price: 15,
+    capacity: 0,
+    price: 100,
   },
   {
-    name: "Parking 2",
+    name: "Parking maka",
     position: { lat: 33.533, lng: -7.657 },
     capacity: 200,
     price: 12,
   },
   {
-    name: "Parking 3",
+    name: "Parking elite",
     position: { lat: 33.601, lng: -7.543 },
-    capacity: 100,
+    capacity: 0,
     price: 10,
   },
   // Add more parking locations in Casablanca...
 ];
 
 function Maps() {
+  const [loading, setLoading] = useState(true);
+
   const [currentLocation, setCurrentLocation] = useState(null);
   const [destination, setDestination] = useState(null);
   const [directions, setDirections] = useState(null);
@@ -116,6 +120,15 @@ function Maps() {
     } else {
       console.log("Geolocation is not supported by this browser.");
     }
+  }, []);
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setLoading(false); // Set loading to false after 2 seconds
+    }, 3000);
+
+    return () => {
+      clearTimeout(timeoutId); // Clear the timeout if the component is unmounted before it expires
+    };
   }, []);
 
   // const handleApiLoaded = (map) => {
@@ -147,11 +160,18 @@ function Maps() {
 
     if (parkingList.length > 0) {
       parkingList.forEach((parking, index) => {
+        const label = {
+          text: parking.capacity.toString(), // Capacity number as the label text
+          color: "purple", // Label text color
+          fontSize: "14px", // Label text font size
+          fontWeight: "bold", // Label text font weight
+        };
         const marker = new window.google.maps.Marker({
           position: parking.position,
-          label: parking.name,
+          label: label,
           icon: {
             url: "https://maps.google.com/mapfiles/ms/icons/parkinglot.png",
+
             scaledSize: new window.google.maps.Size(30, 30),
           },
           map: map,
@@ -196,7 +216,7 @@ function Maps() {
         <p>Prix: ${parking.price}  DHS</p>
       `,
       // buttons redirect to the payment page
-      showCancelButton: true,
+      showConfirmButton: parking.capacity > 0,
       confirmButtonText: "Reserve",
       cancelButtonText: "Cancel",
     }).then((result) => {
@@ -223,40 +243,58 @@ function Maps() {
           setParkingList(combinedParkingList);
         }}
       >
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={currentLocation}
-          zoom={10}
-          onLoad={handleApiLoaded}
-        >
-          {currentLocation && (
-            <Marker
-              position={currentLocation}
-              icon={{
-                url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                scaledSize: new window.google.maps.Size(48, 48),
-              }}
-            />
-          )}
-          {destination && (
-            <Marker position={destination.position} label={destination.name} />
-          )}
-          {destination && (
-            <DirectionsService
-              options={directionsOptions}
-              callback={directionsCallback}
-            />
-          )}
-          {directions && (
-            <DirectionsRenderer
-              options={{
-                directions: directions,
-                markerOptions: { visible: false },
-                polylineOptions: { strokeColor: "#800080" },
-              }}
-            />
-          )}
-          {/* {parkingList &&
+        {loading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "400px", // Adjust the height to match your containerStyle
+            }}
+          >
+            <i
+              className="fa-sharp fa-regular fa-spinner-third"
+              style={{ fontSize: "48px" }} // Adjust the font size to make the icon larger
+            ></i>
+          </div>
+        ) : (
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={currentLocation}
+            zoom={10}
+            onLoad={handleApiLoaded}
+          >
+            {currentLocation && (
+              <Marker
+                position={currentLocation}
+                icon={{
+                  url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                  scaledSize: new window.google.maps.Size(48, 48),
+                }}
+              />
+            )}
+            {destination && (
+              <Marker
+                position={destination.position}
+                label={destination.name}
+              />
+            )}
+            {destination && (
+              <DirectionsService
+                options={directionsOptions}
+                callback={directionsCallback}
+              />
+            )}
+            {directions && (
+              <DirectionsRenderer
+                options={{
+                  directions: directions,
+                  markerOptions: { visible: false },
+                  polylineOptions: { strokeColor: "#800080" },
+                }}
+              />
+            )}
+            {/* {parkingList &&
           parkingList.map((parking, index) => (
             <Marker
               key={index}
@@ -269,7 +307,8 @@ function Maps() {
               onClick={() => handleMarkerClick(parking)}
             />
           ))} */}
-        </GoogleMap>
+          </GoogleMap>
+        )}
       </LoadScript>
     </>
   );

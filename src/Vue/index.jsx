@@ -65,15 +65,15 @@ export default function SignIn() {
                   </button>
                   <p>
                     {" "}
-                    <Link to={"/SignUp"}>you have an account ? </Link>{" "}
-                    <Link to={"/forgotPassword"}>you forget password ? </Link>
+                    <Link to={"/SignUp"}>Vous n'avez pas un compte ? </Link>
+                    <Link to={"/forgotPassword"}>mot de passe oublier? </Link>
                   </p>
                 </Form>
               </FormikProvider>
             </div>
           </div>
         </div>
-        <Link to={"/payment"}>payment test </Link>
+        {/* <Link to={"/payment"}>payment test </Link> */}
       </section>
     </div>
   );
