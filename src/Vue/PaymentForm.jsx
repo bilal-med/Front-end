@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { ErrorMessage, Form, Formik } from "formik";
 import * as Yup from "yup";
-import {
-  CardElement,
-  /*useElements, useStripe*/
-} from "@stripe/react-stripe-js";
+import { CardElement } from "@stripe/react-stripe-js";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
+import QRCode from "react-qr-code";
 
 const CARD_OPTIONS = {
   iconStyle: "solid",
@@ -57,29 +55,6 @@ const PaymentForm = () => {
 
   const handleSubmit = async (values) => {
     // Perform Stripe payment processing here using the `stripe` and `elements` objects
-
-    Swal.fire({
-      title: "Enter your email",
-      input: "email",
-      inputLabel: "Email",
-      inputPlaceholder: "Enter your email address",
-      showCancelButton: true,
-      confirmButtonText: "envoyer QR code",
-      cancelButtonText: "Cancel",
-      preConfirm: (email) => {
-        // Do something with the retrieved email
-        console.log("Entered email:", email);
-        // Perform any necessary actions with the email (e.g., send it to the server)
-        Swal.fire({
-          title: "Payment Successful!",
-          text: `You have successfully paid for your order at ${parkingName}. Capacity: ${parkingCapacity}, Price: ${parkingPrice}`,
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      },
-    });
-
     // Get the query parameters from the current URL
     const queryParams = new URLSearchParams(window.location.search);
     const parkingName = queryParams.get("parkingName");
@@ -88,10 +63,81 @@ const PaymentForm = () => {
     const parkingLat = queryParams.get("parkingLat");
     const parkingLng = queryParams.get("parkingLng");
 
+    Swal.fire({
+      title: "Enter your email",
+      input: "email",
+      inputLabel: "Email",
+      inputPlaceholder: "Enter your email address",
+      showCancelButton: true,
+      confirmButtonText: "Send QR code",
+      cancelButtonText: "Cancel",
+      preConfirm: (email) => {
+        // Do something with the retrieved email
+        console.log("Entered email:", email);
+        const qrCodeData = {
+          email: email,
+          parkingName: parkingName,
+          parkingCapacity: parkingCapacity,
+          parkingPrice: parkingPrice,
+        };
+        const qrCodeDataString = JSON.stringify(qrCodeData);
+
+        // Generate QR code image
+        const qrCodeImage = <QRCode value={qrCodeDataString} size={200} />;
+
+        // Send email with QR code
+        sendEmailWithQRCode(email, qrCodeImage, values);
+      },
+    });
+
     // Redirect to "/mapspay" with the retrieved query parameters
     redirect(
       `/mapspay?parkingName=${parkingName}&parkingCapacity=${parkingCapacity}&parkingPrice=${parkingPrice}&parkingLat=${parkingLat}&parkingLng=${parkingLng}`
     );
+  };
+
+  const sendEmailWithQRCode = (email, qrCodeImage, values) => {
+    const emailSubject = "QR Code for Parking";
+    const emailBody = `Dear user,\n\nPlease find attached the QR code for your parking reservation.\n\nBest regards,\nThe Parking Team`;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = qrCodeImage.props.size;
+    canvas.height = qrCodeImage.props.size;
+    const ctx = canvas.getContext("2d");
+
+    // Create an image element from qrCodeImage.props.children
+    const qrCodeImageElement = new Image();
+    qrCodeImageElement.src = qrCodeImage.props.children;
+
+    qrCodeImageElement.onload = () => {
+      ctx.drawImage(qrCodeImageElement, 0, 0);
+
+      const qrCodeDataUrl = canvas.toDataURL("image/png");
+
+      const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(
+        emailSubject
+      )}&body=${encodeURIComponent(emailBody)}`;
+
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = mailtoLink;
+
+      // Attach the QR code image as an attachment
+      link.setAttribute("download", "qr_code.png");
+      link.setAttribute("href", qrCodeDataUrl);
+
+      // Open the user's default email client
+      link.click();
+
+      // Display a success message
+      Swal.fire({
+        title: "Payment Successful!",
+        text: `You have successfully paid for your order.`,
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    };
   };
 
   const handleCardElementChange = (event) => {
@@ -118,6 +164,7 @@ const PaymentForm = () => {
                   cvc: "",
                 }}
                 onSubmit={handleSubmit}
+                // validationSchema={paymentValidationSchema}
               >
                 {({ errors, touched }) => (
                   <Form className="space-y-4 md:space-y-6">

@@ -9,6 +9,8 @@ import {
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
+import { QrReader } from "react-qr-reader";
+
 const containerStyle = {
   width: "100%",
   height: "400px",
@@ -21,6 +23,14 @@ function MapsPay() {
   const [destination, setDestination] = useState(null);
   const [directions, setDirections] = useState(null);
   const [parkingList, setParkingList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [qrCodeData, setQrCodeData] = useState(null);
+
+  const handleQrCodeScan = (data) => {
+    if (data) {
+      setQrCodeData(data);
+    }
+  };
 
   const [park, setPark] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -58,6 +68,15 @@ function MapsPay() {
     }
   }, []);
 
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setLoading(false); // Set loading to false after 2 seconds
+    }, 3000);
+
+    return () => {
+      clearTimeout(timeoutId); // Clear the timeout if the component is unmounted before it expires
+    };
+  }, []);
   const handleApiLoaded = (map) => {
     map.addListener("click", (event) => {
       setDestination({
@@ -121,6 +140,15 @@ function MapsPay() {
     }
   };
 
+  const handleQrCodeError = (error) => {
+    Swal.fire({
+      title: "Error",
+      text: error.message,
+      icon: "error",
+      confirmButtonText: "OK",
+    });
+  };
+
   const combinedParkingList = [
     // Combine your virtual parking lists here
   ];
@@ -142,54 +170,102 @@ function MapsPay() {
           setParkingList(combinedParkingList);
         }}
       >
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={currentLocation}
-          zoom={100}
-          onLoad={handleApiLoaded}
-        >
-          {currentLocation && (
-            <Marker
-              position={currentLocation}
-              icon={{
-                url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                scaledSize: new window.google.maps.Size(48, 48),
+        {loading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "400px",
+            }}
+          >
+            <i
+              className="fa fa-spinner fa-spin"
+              style={{
+                fontSize: "48px",
+                color: "purple", // Update the color to purple
               }}
-            />
-          )}
-          {destination && (
-            <Marker position={destination.position} label={destination.name} />
-          )}
-          {destination && (
-            <DirectionsService
-              options={directionsOptions}
-              callback={directionsCallback}
-            />
-          )}
-          {directions && (
-            <DirectionsRenderer
-              options={{
-                directions: directions,
-                markerOptions: { visible: false },
-                polylineOptions: { strokeColor: "#800080" },
-              }}
-            />
-          )}
-          {/* Render parking markers */}
-          {parkingList.map((parking, index) => (
-            <Marker
-              key={index}
-              position={parking.position}
-              label={parking.name}
-              icon={{
-                url: "https://maps.google.com/mapfiles/ms/icons/parkinglot.png",
-                scaledSize: new window.google.maps.Size(48, 48),
-              }}
-              onClick={() => handleMarkerClick(parking)}
-            />
-          ))}
-        </GoogleMap>
+            ></i>
+          </div>
+        ) : (
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={currentLocation}
+            zoom={100}
+            onLoad={handleApiLoaded}
+          >
+            {currentLocation && (
+              <Marker
+                position={currentLocation}
+                icon={{
+                  url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                  scaledSize: new window.google.maps.Size(48, 48),
+                }}
+              />
+            )}
+            {destination && (
+              <Marker
+                position={destination.position}
+                label={destination.name}
+              />
+            )}
+            {destination && (
+              <DirectionsService
+                options={directionsOptions}
+                callback={directionsCallback}
+              />
+            )}
+            {directions && (
+              <DirectionsRenderer
+                options={{
+                  directions: directions,
+                  markerOptions: { visible: false },
+                  polylineOptions: { strokeColor: "#800080" },
+                }}
+              />
+            )}
+            {/* Render parking markers */}
+            {parkingList.map((parking, index) => (
+              <Marker
+                key={index}
+                position={parking.position}
+                label={parking.name}
+                icon={{
+                  url: "https://maps.google.com/mapfiles/ms/icons/parkinglot.png",
+                  scaledSize: new window.google.maps.Size(48, 48),
+                }}
+                onClick={() => handleMarkerClick(parking)}
+              />
+            ))}
+          </GoogleMap>
+        )}
       </LoadScript>
+      {showModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>QR Code Scanner</h2>
+            </div>
+            <div className="modal-body">
+              <QrReader
+                delay={300}
+                onError={handleQrCodeError}
+                onScan={handleQrCodeScan}
+                style={{ width: "100%" }}
+              />
+              {qrCodeData && (
+                <div className="qr-code-data">
+                  <p>Scanned QR Code Data:</p>
+                  <p>{qrCodeData}</p>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => setShowModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

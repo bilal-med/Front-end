@@ -207,31 +207,39 @@ function Maps() {
     ...virtualMeknesParkingList,
     ...virtualCasablancaParkingList,
   ];
-
   const handleMarkerClick = (parking) => {
-    Swal.fire({
-      title: parking.name,
-      html: `
+    if (parking.capacity > 0) {
+      Swal.fire({
+        title: parking.name,
+        html: `
         <p>nombre de place : ${parking.capacity}</p>
         <p>Prix: ${parking.price}  DHS</p>
       `,
-      // buttons redirect to the payment page
-      showConfirmButton: parking.capacity > 0,
-      confirmButtonText: "Reserve",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setPark(parking);
-        const queryParams = new URLSearchParams();
-        queryParams.set("parkingName", parking.name);
-        queryParams.set("parkingCapacity", parking.capacity);
-        queryParams.set("parkingPrice", parking.price);
-        queryParams.set("parkingLat", parking.position.lat);
-        queryParams.set("parkingLng", parking.position.lng);
-        const queryString = queryParams.toString();
-        navigation(`/payment?${queryString}`);
-      }
-    });
+        showCancelButton: true,
+        confirmButtonText: "Reserve",
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setPark(parking);
+          const queryParams = new URLSearchParams();
+          queryParams.set("parkingName", parking.name);
+          queryParams.set("parkingCapacity", parking.capacity);
+          queryParams.set("parkingPrice", parking.price);
+          queryParams.set("parkingLat", parking.position.lat);
+          queryParams.set("parkingLng", parking.position.lng);
+          const queryString = queryParams.toString();
+          navigation(`/payment?${queryString}`);
+        }
+      });
+    } else {
+      Swal.fire({
+        title: parking.name,
+        html: `
+      <p>nombre de place : ${parking.capacity}</p>
+      <p>Prix: ${parking.price}  DHS</p>`,
+        showCancelButton: false,
+      });
+    }
   };
 
   return (
@@ -249,12 +257,15 @@ function Maps() {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              height: "400px", // Adjust the height to match your containerStyle
+              height: "400px",
             }}
           >
             <i
-              className="fa-sharp fa-regular fa-spinner-third"
-              style={{ fontSize: "48px" }} // Adjust the font size to make the icon larger
+              className="fa fa-spinner fa-spin"
+              style={{
+                fontSize: "48px",
+                color: "purple", // Update the color to purple
+              }}
             ></i>
           </div>
         ) : (

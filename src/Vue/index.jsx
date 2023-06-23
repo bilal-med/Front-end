@@ -1,10 +1,11 @@
 import * as React from "react";
-import axios from 'axios';
+import axios from "axios";
 import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 import Input from "../ui/Input";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom/dist/umd/react-router-dom.development";
+import Swal from "sweetalert2";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -21,21 +22,33 @@ export default function SignIn() {
       password: "",
     },
     onSubmit: (data) => {
-      axios.post('http://localhost:8000/login', data)
-           .then(response => {
-             // Traitement en cas de succès de la requête
-             if (response.status) {
-              console.log(response.data.token)
-                alert("success")
-               navigate("/horaire");
-             } else {
-               console.error('Erreur lors de la connexion');
-             }
-           })
-           .catch(error => {
-             // Traitement en cas d'erreur de la requête
-             console.error('Erreur lors de la requête', error);
-           });
+      axios
+        .post("http://localhost:8000/login", data)
+        .then((response) => {
+          // Traitement en cas de succès de la requête
+          if (response.status === 200) {
+            console.log(response.data.token);
+            Swal.fire({
+              icon: "success",
+              title: "Connexion réussie",
+              text: "Vous êtes connecté avec succès !",
+            }).then(() => {
+              navigate("/horaire");
+            });
+            navigate("/horaire");
+          } else {
+            console.error("Erreur lors de la connexion");
+            Swal.fire({
+              icon: "error",
+              title: "Erreur de connexion",
+              text: "Une erreur s'est produite lors de la connexion.",
+            });
+          }
+        })
+        .catch((error) => {
+          // Traitement en cas d'erreur de la requête
+          console.error("Erreur lors de la requête", error);
+        });
     },
     validationSchema: authValidationShema,
   });
