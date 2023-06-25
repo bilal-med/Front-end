@@ -8,10 +8,7 @@ import {
 } from "@react-google-maps/api";
 import Swal from "sweetalert2";
 
-import {
-  useNavigate,
-  useNavigation,
-} from "react-router-dom/dist/umd/react-router-dom.development";
+import {useNavigate,} from "react-router-dom/dist/umd/react-router-dom.development";
 import Payment from "./payment";
 import Modal from "./PaymentModal";
 import PaymentForm from "./PaymentForm";
@@ -106,7 +103,7 @@ function Maps() {
   const navigation = useNavigate();
 
   const handleClick = () => {
-    navigation("/ticket")
+    navigation("/payment")
 
   };
 
@@ -332,7 +329,7 @@ function Maps() {
             className="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
             onClick={handleClick}
         >
-          Génére ton ticket
+          Au paiment
         </button>
       </div>
 
