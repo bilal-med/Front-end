@@ -7,7 +7,6 @@ import {
   DirectionsRenderer,
 } from "@react-google-maps/api";
 import Swal from "sweetalert2";
-import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import {
   useNavigate,

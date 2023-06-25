@@ -2,7 +2,12 @@ import * as React from "react";
 import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 import Input from "../ui/Input";
+import { useNavigate } from "react-router-dom/dist/umd/react-router-dom.development";
+import axios from "axios";
+import Swal from "sweetalert2";
+
 export default function Horaire() {
+  const navigate = useNavigate();
   const authValidationShema = Yup.object().shape({
     // destination: est maps
     destination: Yup.string().required("Destination obligatoire"),
@@ -17,8 +22,20 @@ export default function Horaire() {
       datesortie: "",
     },
     onSubmit: (data) => {
-      console.log(data);
-      // logique
+      const { destination, dateentrer, datesortie } = data;
+      const url = `/maps?destination=${encodeURIComponent(
+        destination
+      )}&dateentrer=${encodeURIComponent(
+        dateentrer
+      )}&datesortie=${encodeURIComponent(datesortie)}`;
+
+      navigate(url);
+      Swal.fire({
+        icon: "success",
+        title: "Votre demande a été envoyé",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     },
     validationSchema: authValidationShema,
   });
