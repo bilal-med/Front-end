@@ -1,15 +1,10 @@
 import * as React from "react";
-import { useEffect } from "react";
 import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 import Input from "../ui/Input";
-import { useNavigate } from "react-router-dom/dist/umd/react-router-dom.development";
-import axios from "axios";
-import Swal from "sweetalert2";
-
 export default function Horaire() {
-  const navigate = useNavigate();
-  const authValidationSchema = Yup.object().shape({
+  const authValidationShema = Yup.object().shape({
+    // destination: est maps
     destination: Yup.string().required("Destination obligatoire"),
     dateentrer: Yup.date().required("Date entrer obligatoire"),
     datesortie: Yup.date().required("Date sortie obligatoire"),
@@ -22,52 +17,12 @@ export default function Horaire() {
       datesortie: "",
     },
     onSubmit: (data) => {
-      const { destination, dateentrer, datesortie } = data;
-      const url = `/maps?destination=${encodeURIComponent(
-        destination
-      )}&dateentrer=${encodeURIComponent(
-        dateentrer
-      )}&datesortie=${encodeURIComponent(datesortie)}`;
-
-      navigate(url);
-      Swal.fire({
-        icon: "success",
-        title: "Votre demande a été envoyé",
-        showConfirmButton: false,
-        timer: 1500,
-      });
+      console.log(data);
+      // logique
     },
-    validationSchema: authValidationSchema,
+    validationSchema: authValidationShema,
   });
-
   const { errors, getFieldProps } = formik;
-
-  // useEffect(() => {
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       async (position) => {
-  //         const { latitude, longitude } = position.coords;
-  //         const apiUrl = `https://geocoding-api.com/v1/reverse?lat=${latitude}&lon=${longitude}&key=AIzaSyCHc5NI8qU_WJ7X0UqoOD33VzvKibsxVkU`;
-  //         try {
-  //           const response = await axios.get(
-  //             // Use the CORS Anywhere proxy URL
-  //             `https://cors-anywhere.herokuapp.com/${apiUrl}`
-  //           );
-  //           const location = response.data?.address || "";
-  //           formik.setFieldValue("destination", location);
-  //         } catch (error) {
-  //           console.error("Error retrieving location:", error);
-  //         }
-  //       },
-  //       (error) => {
-  //         console.error("Error getting current position:", error);
-  //       }
-  //     );
-  //   } else {
-  //     console.error("Geolocation is not supported by this browser.");
-  //   }
-  // }, [formik]);
-
   return (
     <div className="flex flex-col">
       <section className="bg-gray-50">
