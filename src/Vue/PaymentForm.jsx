@@ -8,6 +8,7 @@ import {
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import axios from "axios";
 
 const CARD_OPTIONS = {
   iconStyle: "solid",
@@ -69,6 +70,9 @@ const PaymentForm = () => {
       preConfirm: (email) => {
         // Do something with the retrieved email
         console.log("Entered email:", email);
+
+        const body = {email: email}
+        axios.post("http://localhost:8000/ticket", body)
         // Perform any necessary actions with the email (e.g., send it to the server)
         Swal.fire({
           title: "Payment Successful!",

@@ -5,6 +5,7 @@ import Horaire from "./Vue/Horaire";
 import ForgetPasswoord from "./Vue/Forgetpaddword";
 import { Routes } from "react-router-dom/dist/umd/react-router-dom.development";
 import SignUp from "./Vue/SignUp";
+import Ticket from "./Vue/Ticket"
 
 import StripeContainer from "./Vue/StripeContainer";
 import Maps from "./Vue/Maps";
@@ -21,6 +22,7 @@ function App() {
         <Route path="/maps" element={<Maps />} />
         <Route path="/payment" element={<StripeContainer />} />
         <Route path="/mapspay" element={<MapsPay />} />
+        <Route path="/ticket" element={<Ticket />} />
       </Routes>
     </Router>
   );
