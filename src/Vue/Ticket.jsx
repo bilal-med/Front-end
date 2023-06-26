@@ -10,6 +10,7 @@ import  qrcode7 from "./qrCode/7.png"
 import  qrcode8 from "./qrCode/8.png"
 import  qrcode9 from "./qrCode/9.png"
 import  qrcode10 from "./qrCode/10.png"
+import axios from "axios";
 
 export default function Ticket() {
   const images = [qrcode1, qrcode2, qrcode3, qrcode4, qrcode5, qrcode6, qrcode7, qrcode8, qrcode9, qrcode10]
@@ -20,9 +21,7 @@ export default function Ticket() {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    // Action à effectuer lors du clic sur le bouton
-    // Vous pouvez ajouter votre logique ici
-    // Par exemple, naviguer vers une autre page en utilisant `navigate('/chemin-de-la-page')`
+    axios.get("http://localhost:8000/execute")
 
   };
 
